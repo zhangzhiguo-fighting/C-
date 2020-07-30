@@ -8,20 +8,23 @@ class String {
 public:
     
     //constructor
-    String() : p_str(nullptr), strLength(0){}
+    String() : p_str(nullptr), strLength(0){
+        p_str = new char[512];
+        cout << "constructor" << endl;
+    }
     String(const char *str) : String() {
         if(nullptr == str) { return ; }
         this->strLength = strlen(str);
         this->p_str = new char[strLength + 1];
         strcpy(this->p_str, str);
-        cout << "constructor" << endl;
+        cout << "prameter_constructor" << endl;
     }
     String(const String &str) : String() {
         if (nullptr == str.p_str){ return ; }
         this->strLength = str.strLength;
         this->p_str = new char[strLength + 1];
         strcpy(this->p_str, str.p_str);
-        cout << "copy constructor" << endl;
+        cout << "copy_constructor" << endl;
     }
     
     char *get_p_str() {
@@ -61,7 +64,7 @@ public:
         delete[] p_old;
         return *this;
     }
-    
+
     //operator+
     haizei::String operator+(const haizei::String &str) {
         haizei::String ret;
@@ -82,17 +85,18 @@ public:
     haizei::String &operator=(const haizei::String &str) {
         this->p_str = str.p_str;
         this->strLength = str.strLength;
+        cout << "operator=" << endl;
         return *this;
     }
     
 
     ~String() {
         //delete[] this->p_str;
-        cout << "destructor" << endl;
+        //cout << "destructor" << endl;
     }
 
-    friend istream &operator>>(istream &, haizei::String &);
-    friend ostream &operator<<(ostream &, haizei::String &);
+    friend istream &operator>>(istream &, const haizei::String &);
+    friend ostream &operator<<(ostream &, const haizei::String &);
 
 private:
     char *p_str;
@@ -101,19 +105,20 @@ private:
 
 
 //operator>>
-istream &operator>>(istream &in, haizei::String &str) {
-    char tmp[100];
+istream &operator>>(istream &in, const haizei::String &str) {
+    /*char tmp[100];
     if (in >> tmp) {
         delete[] str.p_str; //清空以前的数据
         str.strLength = strlen(tmp);
         str.p_str = new char[str.strLength + 1];
         strcpy(str.p_str, tmp);
-    }
+    }*/
+    in >> str.p_str;
     return in;
 }
 
 //operator<<
-ostream &operator<<(ostream &out, haizei::String &str) {
+ostream &operator<<(ostream &out, const haizei::String &str) {
     if (str.p_str != nullptr) out << str.p_str;
     return out;
 }  
@@ -122,21 +127,37 @@ ostream &operator<<(ostream &out, haizei::String &str) {
 
 
 int main() {
-    haizei::String s1, s2, s3;
-    cin >> s1 >> s2 >> s3;
-    cout << "s1 == s2 : " << (s1 == s2) << endl;
-    cout << "s1 != s2 : " << (s1 != s2) << endl;
-    cout << "s1 > s2 : " << (s1 > s2) << endl;
-    cout << "s1 < s2 : " << (s1 < s2) << endl;
-    cout << s1[3] << endl;
-    s1[3] = '4';
-    cout << s1 << endl;
-    s1 += s3;
-    cout << s1 << endl;
-    haizei::String s4 = s1 + s2 + s3;
-    cout << s4 << endl;
-    s4 = "program end!";
-    cout << s4 << endl;
-    //s4(s1); 
+    haizei::String a, b, c;
+    cin >> a;
+    b = "fangsong";
+    c = a + b;
+    cout << c << endl;
+    cout << a + b << endl;
+    cout << b << endl;
+    cout << b[0] << endl;
+    b[0] = 'a';
+    cout << b[0] << endl;
+    b += c;
+    cout << b << endl;
+    if(a == b) {
+        cout << "a == b" << endl;
+    } else if(a > b) {
+        cout << "a > b" << endl;
+    } else if(a < b) {
+        cout << " a < b" << endl;
+    } else if(a != b) {
+        cout << "a != b" << endl;
+    }
+    cout << "---------------" << endl;
+    haizei::String d;
+    d = "wwwwwwwww";
+    haizei::String e = d;
+    cout << d << endl;
+    cout << e << endl;
+    e = "xiugai";
+    cout << " ----------------" << endl;
+    cout << d << endl;
+    cout << e << endl;
+
     return 0;
 }
