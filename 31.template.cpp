@@ -30,7 +30,7 @@ int add(int a, int b) {
     return a + b;
 }
 
-template<typename T, typename U> //模板的片特化
+template<typename T, typename U> //模板的偏特化
 auto add(T *a, U *b) -> decltype(*a + *b) {
     return add(*a, *b); //二维地址也行，递归调用两次add(*a, *b)
 }
@@ -44,9 +44,9 @@ auto min(T a, U b) -> decltype(a > b ? b : a) {
     return a > b ? b : a; //工具类设计思想，尽量使用同一个符号，可以让自定义类型少重载符号。
 }
 
-class PrintAny { //一个拥有模板方法的类
+class PrintAny { //一个拥有模板函数的类
 public:
-    template<typename T>
+    template<typename T> //模板函数
         void operator()(const T &a) {
             cout << a << endl;
         }
@@ -84,7 +84,7 @@ void printAny(const T &a, ARGS... args) {
 
 
 
-//帮助模板类展开的模板类
+//帮助模板类展开的模板类(未用到)
 template<int n, typename T, typename ...ARGS> //为什么传入 int n编译期常量? 因为模板在编译后就不存在了
 struct ARG {
     typedef typename ARG<n - 1, ARGS...>::__type __type;
@@ -102,20 +102,20 @@ struct ARG<0, T> {
 };
 
 
-template<typename T, typename ...ARGS> class Test; //工具模板类，去解析变参列表
+template<typename T, typename ...ARGS> class Test{}; //工具模板类，去解析变参列表
 template<typename T, typename ...ARGS>
-class Test<T(ARGS...)> { //使用偏特化形式，让这个模板类使用更像一个函数
+class Test<T(ARGS...)> { //使用偏特化形式，让这个模板类使用更像一个函数，T推导返回值的类型。
 public:
-    T operator()(ARGS... args) { //函数的入口写起
-        return add<T>(args...);   
+    T operator()(ARGS... args) { //函数的入口写起。
+        return add<T>(args...); //调用私有成员里面的add模板函数   
     }
         //typename ARG<0, ARGS...>::__type a, //前面的typename主要是用来说明 后的的内容是一个类型（模板中的内置类型），避免语义歧义。
 private:
-    template<typename T1, typename U, typename ...US>
+    template<typename T1, typename U, typename ...US> //递归展开参数列表
         T1 add(U a, US ...args) {
             return a + add<T1>(args...);
         }
-    template<typename T1, typename U>
+    template<typename T1, typename U> // 递归出口
         T1 add(U a) {
             return a;
         }
@@ -151,13 +151,13 @@ typename remove_reference<T>::type add2(T &&a, T&&b) {
 }
 
 //add_const
-template<typename T> struct add_const { typedef const T type; };
+template<typename T> struct add_const { typedef const T type; }; //如果传过来的实参本来就是const类型，那么此模板类将会把type 推导为 const const 类型（不报错，但会给警告）
 template<typename T> struct add_const<const T> { typedef const T type; }; //T匹配到int
 
 
 //add_lvalue_reference
 template<typename T> struct add_lvalue_reference { typedef T& type; };
-template<typename T> struct add_lvalue_reference <T &>{ typedef T& type; };
+template<typename T> struct add_lvalue_reference <T &>{ typedef T& type; }; //让T去匹配到参数的类型，然后在再根据需要使用tyoedef定义type类型，如传来的是 int &， T则会被推导为int，而不是被推到为 int &；
 template<typename T> struct add_lvalue_reference<T &&> { typedef T& type; };
 
 //add_rvalue_reference
@@ -166,7 +166,7 @@ template<typename T> struct add_rvalue_reference<T &> { typedef T&& type; };
 template<typename T> struct add_rvalue_reference<T &&> { typedef T&& type; };
 
 //remove_pointer
-template<typename T> struct remove_pointer { typedef T type; };
+template<typename T> struct remove_pointer { typedef T type; }; //即是特化版本依赖的基本模板类，也是特化版本的递归出口
 template<typename T> struct remove_pointer<T *> { typedef typename remove_pointer<T>::type type; };
 
 
@@ -206,7 +206,7 @@ int main() {
     cout << max(4, 3) << endl;
     cout << haizei::max(4.3, 3) << endl;
     cout << haizei::min(4.3, 3) << endl;
-    haizei::PrintAny print; //有一个PrintAny的类
+    haizei::PrintAny print; //用PrintAny类去声明一个print对象
     print(123); //模板的实例化会生成具体的函数或类，模板的参数就是哪些未确定的类型，operator()(int); 当我们使用模板方法的时候，模板方法再进行实例化（把各个参数固定）
     print(34543);
     print(3.4);
@@ -229,6 +229,8 @@ int main() {
     cout << f4(1, 2, 3, 4) << endl;
     haizei::Test<int(int, int, int, int, int)> f5;
     cout << f5(1, 2, 3, 4, 5) << endl;
+    haizei::Test<double(int, int, int, int, int, double)> f6;
+    cout << f6(1, 2, 3, 4, 5, 5.5) << endl;
     
     haizei::f(n);
     haizei::f(haizei::move(m));

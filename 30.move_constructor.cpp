@@ -34,7 +34,7 @@ public:
         this->__buff_size = s.__buff_size;
         this->__length = s.__length;
         this->buff = s.buff;
-        s.buff = nullptr;
+        s.buff = nullptr; // 若不把先前的值指针置为空，原来的临时对象调用析构函数的时候，仍然会释放掉这边区域（即匿名对象的存储空间被释放）
     }
 
     char &at(int ind) {
